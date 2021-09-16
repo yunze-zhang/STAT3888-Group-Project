@@ -57,4 +57,24 @@ save(tech_biom3, file="cleaned_biom.Rdata")
 
 
 
+```{r}
+nutr = read.csv("data/AHS11Nutrient.csv")
+```
 
+```{r}
+head(nutr)
+```
+```{r}
+vis_miss(nutr, warn_large_data = FALSE)
+```
+```{r}
+combined_data = merge(tech_biom3, nutr)
+```
+
+```{r}
+head(combined_data)
+```
+
+```{r}
+save(combined_data, file="combined_data.Rdata")
+```
