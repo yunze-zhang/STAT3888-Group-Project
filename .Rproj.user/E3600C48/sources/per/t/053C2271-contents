@@ -1,0 +1,19 @@
+---
+title: "Data Cleaning"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(skimr)
+library(visdat)
+library(GGally)
+library(knitr)
+
+load("tech_data.Rdata")
+```
+
+```{r}
+
+```
+
