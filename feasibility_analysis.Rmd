@@ -1,0 +1,41 @@
+---
+title: "Feasibility Analysis"
+output: html_document
+---
+
+```{r, warning = FALSE}
+library(tidyverse)
+library(skimr)
+library(visdat)
+library(GGally)
+library(knitr)
+
+load("combined_data.Rdata")
+```
+
+```{r}
+combined_data
+```
+
+```{r}
+systol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+```
+
+```{r}
+systol_data
+```
+
+
+```{r}
+systol_M0 = lm(SYSTOL ~ 1, data = systol_data)
+systol_M1 = lm(SYSTOL ~ ., data = systol_data)
+```
+
+```{r, results = "hide"}
+systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2)
+```
+
+```{r}
+summary(systol_forw)
+```
+

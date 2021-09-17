@@ -10,6 +10,7 @@ library(skimr)
 library(visdat)
 library(GGally)
 library(knitr)
+library(dplyr)
 
 load("tech_data.Rdata")
 ```
@@ -37,22 +38,23 @@ vis_miss(clean_cardio_data)
 
 ```{r}
 nutr = read.csv("data/AHS11Nutrient.csv")
+condensed_nutr = select(nutr, -ends_with("2"))
 ```
 
 ```{r}
-head(nutr)
+head(condensed_nutr)
 ```
 ```{r}
-vis_miss(nutr, warn_large_data = FALSE)
+vis_miss(condensed_nutr, warn_large_data = FALSE)
 ```
 ```{r}
-cardio_data = merge(clean_cardio_data, nutr)
-```
-
-```{r}
-head(cardio_data)
+combined_data = merge(clean_cardio_data, condensed_nutr)
 ```
 
 ```{r}
-save(cardio_data, file="cardio_data.Rdata")
+head(combined_data)
+```
+
+```{r}
+save(combined_data, file="combined_data.Rdata")
 ```
