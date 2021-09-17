@@ -17,6 +17,11 @@ load("tech_data.Rdata")
 
 ```{r}
 cardio_data = tech_biom[, c("ABSPID", "BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "SYSTOL", "HSUGBC")]
+
+#Convert all columns to numeric
+columns =  c("BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "SYSTOL", "HSUGBC")
+cardio_data[, columns] <- lapply(columns, function(x) as.numeric(cardio_data[[x]]))
+head(cardio_data)
 ```
 
 
