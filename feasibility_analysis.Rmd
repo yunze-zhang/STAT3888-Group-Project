@@ -4,7 +4,7 @@ output: html_document
 ---
 
 
-```{r, warning = FALSE, message = FALSE}
+```{r Preprocessing, warning = FALSE, message = FALSE, include = FALSE}
 library(tidyverse)
 library(skimr)
 library(visdat)
@@ -17,51 +17,53 @@ library(brglm)
 load("combined_data.Rdata")
 ```
 
-```{r}
-combined_data
+```{r Viewing combined data, warning = FALSE}
+class(combined_data)
+DT::datatable(combined_data)
 ```
 
-```{r}
+```{r Viewing Systolic blood pressure, warning = FALSE}
 systol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+# How/why did you choose to omit these particular variables?
+
+class(systol_data)
+DT::datatable(systol_data)
 ```
 
-```{r}
-systol_data
-```
-
-```{r}
+```{r Correlation plot of variables}
 M = cor(systol_data)
 corrplot(M, method = 'color', order = 'alphabet') 
 ```
 
 
-```{r}
+```{r Initial null and full models}
 systol_M0 = lm(SYSTOL ~ 1, data = systol_data)
 systol_M1 = lm(SYSTOL ~ ., data = systol_data)
 ```
 
-```{r, results = "hide"}
-systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2)
-```
+```{r Forward AIC on null model}
+systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2, trace = 0)
 
-```{r}
 summary(systol_forw)
 ```
-```{r}
+
+```{r Created GLM}
 y = systol_data$SYSTOL
 x = combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
-model <- glmnet(x, y, alpha = 0)
+# Once again where do these variables come from? (I haven't done any lectures yet, is this concept from it?)
 
-```
-```{r}
-best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
-coef(best_model)
-```
-```{r}
-summarise(y)
+model <- glmnet(x, y, alpha = 0) # purpose of this variable? (We aren't using it anywhere)
+print(model)
+
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda) # How do we find this best_lambda?
+print(best_model)
 ```
 
 ```{r}
+summary(y)
+```
+
+```{r Predict Systolic blood pressure levels using the GLM}
 y_predicted <- predict(model, s = best_lambda, newx = x)
 sst <- sum((y - mean(y))^2)
 sse <- sum((y_predicted - y)^2)
