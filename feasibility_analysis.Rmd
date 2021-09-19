@@ -3,12 +3,16 @@ title: "Feasibility Analysis"
 output: html_document
 ---
 
-```{r, warning = FALSE}
+
+```{r, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(skimr)
 library(visdat)
 library(GGally)
 library(knitr)
+library(corrplot)
+library(glmnet)
+library(brglm)
 
 load("combined_data.Rdata")
 ```
@@ -25,6 +29,11 @@ systol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "
 systol_data
 ```
 
+```{r}
+M = cor(systol_data)
+corrplot(M, method = 'color', order = 'alphabet') 
+```
+
 
 ```{r}
 systol_M0 = lm(SYSTOL ~ 1, data = systol_data)
@@ -37,5 +46,30 @@ systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1
 
 ```{r}
 summary(systol_forw)
+```
+```{r}
+y = systol_data$SYSTOL
+x = combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+model <- glmnet(x, y, alpha = 0)
+
+```
+```{r}
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(best_model)
+```
+```{r}
+summarise(y)
+```
+
+```{r}
+y_predicted <- predict(model, s = best_lambda, newx = x)
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+rsq <- 1 - sse/sst
+rsq
+```
+```{r}
+r2 = brglm(y~x)
+summary(r2)
 ```
 
