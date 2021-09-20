@@ -26,6 +26,8 @@ DT::datatable(combined_data)
 systol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
 # How/why did you choose to omit these particular variables?
 
+# These are our response variables - those we decided we would use to predict cardiovascular health with. If I don't remove them, they'd become predictor variables in the linear models I use later on. 
+
 class(systol_data)
 DT::datatable(systol_data)
 ```
@@ -47,16 +49,23 @@ systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1
 summary(systol_forw)
 ```
 
+### The stuff from here onwards was me trying to play with getting ridge regression working in R. It didnt come out as I expected so I redid everything in python which worked out better.
+
 ```{r Created GLM}
+
 y = systol_data$SYSTOL
 x = combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
 # Once again where do these variables come from? (I haven't done any lectures yet, is this concept from it?)
 
 model <- glmnet(x, y, alpha = 0) # purpose of this variable? (We aren't using it anywhere)
-print(model)
+# Alpha determines if we want LASSO or RIDGE regression. I think I tested ridge regression here.
 
-best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda) # How do we find this best_lambda?
-print(best_model)
+best_lambda = model$lambda.min
+
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda) # How do we find this best_lambda? 
+# Oops, must have accidentally deleted the line. 
+
+summary(best_model)
 ```
 
 ```{r}
