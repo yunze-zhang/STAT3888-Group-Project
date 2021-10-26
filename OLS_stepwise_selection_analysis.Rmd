@@ -13,13 +13,10 @@ library(knitr)
 library(corrplot)
 library(glmnet)
 library(brglm)
-library(jtools)
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
 ```
-
-```{r}
-install.packages('ggstance')
-```
-
 
 ```{r Preprocessing, warning = FALSE, message = FALSE, include = FALSE}
 combined_data = read.csv('PC_combined_data.csv')
@@ -56,47 +53,29 @@ systol_M1 = lm(SYSTOL ~ ., data = systol_data)
 ```{r Forward AIC on null model}
 systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2, trace = 0)
 
-summary(systol_forw)
+tab_model(systol_forw)
 ```
 
 ```{r}
-plot_summs(systol_forw, sort)
+plot_summs(systol_forw) + ggtitle("Coefficient Estimates of OLS Model for Systolic Blood Pressure") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10) 
 ```
 
+```{r Viewing bmi, warning = FALSE}
+bmi_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+```
 
+```{r Initial null and full models}
+bmi_M0 = lm(BMISC ~ 1, data = bmi_data)
+bmi_M1 = lm(BMISC ~ ., data = bmi_data)
+```
 
-### The stuff from here onwards was me trying to play with getting ridge regression working in R. It didnt come out as I expected so I redid everything in python which worked out better.
+```{r Forward AIC on null model}
+bmi_forw <- step(bmi_M0, scope = list(lower = bmi_M0, upper = bmi_M1), direction = "forward", k = 2, trace = 0)
 
-```{r Created GLM}
-
-y = systol_data$SYSTOL
-x = combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
-# Once again where do these variables come from? (I haven't done any lectures yet, is this concept from it?)
-
-model <- glmnet(x, y, alpha = 0) # purpose of this variable? (We aren't using it anywhere)
-# Alpha determines if we want LASSO or RIDGE regression. I think I tested ridge regression here.
-
-best_lambda = model$lambda.min
-
-best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda) # How do we find this best_lambda? 
-# Oops, must have accidentally deleted the line. 
-
-summary(best_model)
+tab_model(bmi_forw)
 ```
 
 ```{r}
-summary(y)
-```
-
-```{r Predict Systolic blood pressure levels using the GLM}
-y_predicted <- predict(model, s = best_lambda, newx = x)
-sst <- sum((y - mean(y))^2)
-sse <- sum((y_predicted - y)^2)
-rsq <- 1 - sse/sst
-rsq
-```
-```{r}
-r2 = brglm(y~x)
-summary(r2)
+plot_summs(bmi_forw) + ggtitle("Coefficient Estimates of OLS Model for BMI") + ylab("Predictor Variable") + xlab("Coefficient Estimate")       + theme_gray(base_size = 10)
 ```
 
