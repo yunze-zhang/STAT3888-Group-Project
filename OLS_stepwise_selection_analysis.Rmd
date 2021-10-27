@@ -18,7 +18,14 @@ library(sjmisc)
 library(sjlabelled)
 library(ggplot2)
 library(jtools)
+library(MASS)
+library(ordinal)
 ```
+
+```{r}
+install.packages('ordinal')
+```
+
 
 ```{r Preprocessing, warning = FALSE, message = FALSE, include = FALSE}
 combined_data = read.csv('PC_combined_data.csv')
@@ -30,7 +37,7 @@ DT::datatable(combined_data)
 ```
 
 ```{r Viewing Systolic blood pressure, warning = FALSE}
-systol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+systol_data=combined_data[ , !(names(combined_data) %in% c("X", "ABSPID", "ABSHID", "BMISC", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
 # How/why did you choose to omit these particular variables?
 
 # These are our response variables - those we decided we would use to predict cardiovascular health with. If I don't remove them, they'd become predictor variables in the linear models I use later on. 
@@ -56,6 +63,7 @@ systol_M1 = lm(SYSTOL ~ ., data = systol_data)
 systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2, trace = 0)
 
 tab_model(systol_forw)
+summary(systol_forw)
 ```
 
 ```{r, Fig1, echo=TRUE, fig.height= 4, fig.width= 7}
@@ -63,7 +71,7 @@ plot_summs(systol_forw) + ggtitle("Regression Coefficient Estimates for Systolic
 ```
 
 ```{r Viewing bmi, warning = FALSE}
-bmi_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+bmi_data=combined_data[ , !(names(combined_data) %in% c("X", "ABSPID", "ABSHID", "SYSTOL", "HCHOLBC", "CHOLRESB", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
 ```
 
 ```{r Initial null and full models}
@@ -81,5 +89,37 @@ tab_model(bmi_forw)
 plot_summs(bmi_forw) + ggtitle("Regression Coefficient Estimates for BMI (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
 ```{r Viewing cholesterol, warning = FALSE}
-chol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "SYSTOL", "HCHOLBC", "BMISC", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+chol_data=combined_data[ , !(names(combined_data) %in% c("X",  "ABSPID", "ABSHID", "SYSTOL", "HCHOLBC", "BMISC", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+chol_data$CHOLRESB = factor(chol_data$CHOLRESB)
 ```
+
+```{r, Testing polr() for ordinal regression}
+chol_M1 = polr(factor(CHOLRESB) ~ Caffeine + Alcohol + Age + Niacin + B12 + Retinols + B6 + Risk.of.Diabetes + Folates + Starch + Fruit,  data = chol_data, Hess = TRUE)
+```
+
+
+
+```{r, Testing clm() for ordinal regression}
+
+chol_M2 = clm(CHOLRESB ~ Caffeine + Alcohol + Age + Niacin + B12 + Retinols + B6 + Risk.of.Diabetes + Folates + Starch + Fruit,  data = chol_data, Hess = TRUE)
+summary(chol_M2)
+```
+```{r}
+tab_model(chol_M2, transform = NULL)
+```
+
+
+```{r}
+plot_summs(chol_M2)
+```
+```{r}
+
+```
+
+
+```{r}
+tidy(chol_M1, p.values = TRUE)
+```
+
+
+
