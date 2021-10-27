@@ -1,5 +1,5 @@
 ---
-title: "Stepwise Selection Model"
+title: "Regression Models used in Group 7 Project"
 output: html_document
 ---
 
@@ -23,12 +23,11 @@ library(ordinal)
 ```
 
 
-```{r Preprocessing, warning = FALSE, message = FALSE, include = FALSE}
+```{r Loading data, warning = FALSE, message = FALSE, include = FALSE}
 combined_data = read.csv('PC_combined_data.csv')
 ```
 
 ```{r Viewing combined data, warning = FALSE}
-class(combined_data)
 DT::datatable(combined_data)
 ```
 
@@ -40,28 +39,21 @@ systol_data=combined_data[ , !(names(combined_data) %in% c("X", "ABSPID", "ABSHI
 # How/why did you choose to omit these particular variables?
 
 # These are our response variables - those we decided we would use to predict cardiovascular health with. If I don't remove them, they'd become predictor variables in the linear models I use later on. 
-
-
-
-
-
-class(systol_data)
-DT::datatable(systol_data)
 ```
 
 
-```{r Initial null and full models}
+```{r SYSTOL Initial null and full models}
 systol_M0 = lm(Systolic.Blood.Pressure ~ 1, data = systol_data)
 systol_M1 = lm(Systolic.Blood.Pressure ~ ., data = systol_data)
 ```
 
-```{r Forward AIC on null model}
+```{r SYSTOL Forward AIC on null model}
 systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2, trace = 0)
 
 tab_model(systol_forw)
 ```
 
-```{r, Fig1, echo=TRUE, fig.height= 4, fig.width= 7}
+```{r, SYSTOL PLOT, echo=TRUE, fig.height= 4, fig.width= 7}
 plot_summs(systol_forw) + ggtitle("Regression Coefficient Estimates for Systolic Blood Pressure (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 9.5)
 ```
 
@@ -72,18 +64,18 @@ bmi_data=combined_data[ , !(names(combined_data) %in% c("X", "ABSPID", "ABSHID",
     )
 ```
 
-```{r Initial null and full models}
+```{r BMI Initial null and full models}
 bmi_M0 = lm(BMI ~ 1, data = bmi_data)
 bmi_M1 = lm(BMI ~ ., data = bmi_data)
 ```
 
-```{r Forward AIC on null model}
+```{r BMI Forward AIC on null model}
 bmi_forw <- step(bmi_M0, scope = list(lower = bmi_M0, upper = bmi_M1), direction = "forward", k = 2, trace = 0)
 
 tab_model(bmi_forw)
 ```
 
-```{r}
+```{r BMI PLOT}
 plot_summs(bmi_forw) + ggtitle("Regression Coefficient Estimates for BMI (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
 ```{r Viewing cholesterol, warning = FALSE}
@@ -98,22 +90,22 @@ chol_data$Total.Cholesterol = factor(chol_data$Total.Cholesterol)
 chol_M0 = clm(Total.Cholesterol ~ 1,  data = chol_data, Hess = TRUE)
 chol_M1 = clm(Total.Cholesterol ~ .,  data = chol_data, Hess = TRUE)
 ```
-```{r Forward AIC on null model}
+```{r CHOLESTEROL Forward AIC on null model}
 ## Looks like forward selection does not work for ordinal logistic regression
 chol_forw <- step(chol_M0, scope = list(lower = chol_M0, upper = chol_M1), direction = "forward", k = 2, trace = 0)
 tab_model(chol_forw)
 ```
 
-```{r, Ordinal Regression with Features selected from Lasso Regression}
+```{r, CHOLESTEROL Ordinal Regression with Features selected from Lasso Regression}
 chol_M2 = clm(Total.Cholesterol ~ Caffeine + Alcohol + Age + Niacin + B12 + Retinols + B6 + Risk.of.Diabetes + Folates + Starch + Fruit,  data = chol_data, Hess = TRUE)
 summary(chol_M2)
 ```
-```{r}
+```{r CHOLESTEROL TABLE}
 tab_model(chol_M2, transform = NULL, string.est = "Estimates")
 ```
 
 
-```{r}
+```{r, CHOLESTEROL PLOT}
 plot_summs(chol_M2) + ggtitle("Regression Coefficient Estimates for Total Cholesterol (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
 
