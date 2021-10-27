@@ -1,5 +1,5 @@
 ---
-title: "Feasibility Analysis"
+title: "Stepwise Selection Model"
 output: html_document
 ---
 
@@ -58,8 +58,8 @@ systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1
 tab_model(systol_forw)
 ```
 
-```{r}
-plot_summs(systol_forw) + ggtitle("Coefficient Estimates of OLS Model for Systolic Blood Pressure") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
+```{r, Fig1, echo=TRUE, fig.height= 4, fig.width= 7}
+plot_summs(systol_forw) + ggtitle("Regression Coefficient Estimates for Systolic Blood Pressure (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 9.5)
 ```
 
 ```{r Viewing bmi, warning = FALSE}
@@ -78,6 +78,8 @@ tab_model(bmi_forw)
 ```
 
 ```{r}
-plot_summs(bmi_forw) + ggtitle("Coefficient Estimates of OLS Model for BMI") + ylab("Predictor Variable") + xlab("Coefficient Estimate")       + theme_gray(base_size = 10)
+plot_summs(bmi_forw) + ggtitle("Regression Coefficient Estimates for BMI (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
-
+```{r Viewing cholesterol, warning = FALSE}
+chol_data=combined_data[ , !(names(combined_data) %in% c("ABSPID", "ABSHID", "SYSTOL", "HCHOLBC", "BMISC", "CHOLNTR", "HDLCHREB", "LDLNTR", "LDLRESB", "DIASTOL", "HSUGBC", "BMR", "EIBMR1", "EIBMR2"))]
+```
