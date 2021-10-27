@@ -16,6 +16,8 @@ library(brglm)
 library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
+library(ggplot2)
+library(jtools)
 ```
 
 ```{r Preprocessing, warning = FALSE, message = FALSE, include = FALSE}
@@ -57,7 +59,7 @@ tab_model(systol_forw)
 ```
 
 ```{r}
-plot_summs(systol_forw) + ggtitle("Coefficient Estimates of OLS Model for Systolic Blood Pressure") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10) 
+plot_summs(systol_forw) + ggtitle("Coefficient Estimates of OLS Model for Systolic Blood Pressure") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
 
 ```{r Viewing bmi, warning = FALSE}
