@@ -1,7 +1,19 @@
 ---
 title: "Regression Models used in Group 7 Project"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
+
+# Aims of Analysis
+This RMD file outlines the final regression models used in STAT3888 Group7's 
+final project. Aim was to determine the significance of nutrients on 
+cardiovascular risk factors of BMI, Cholesterol and Blood Pressure.
+
+# Description of Data
+Data was sourced from the ABS's Australian Health Survey, specifically for
+biomedical and nutrition. Cleaning and EDA of this data is located within 
+the other Python HTML files attached.
 
 
 ```{r Preprocessing, warning = FALSE, message = FALSE, include = FALSE}
@@ -17,13 +29,14 @@ library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
 library(ggplot2)
+library(ggfortify)
 library(jtools)
 library(MASS)
 library(ordinal)
 ```
 
 
-```{r Loading data, warning = FALSE, message = FALSE, include = FALSE}
+```{r Loading data, warning = FALSE, message = FALSE}
 combined_data = read.csv('PC_combined_data.csv')
 ```
 
@@ -42,18 +55,21 @@ systol_data=combined_data[ , !(names(combined_data) %in% c("X", "ABSPID", "ABSHI
 ```
 
 
-```{r SYSTOL Initial null and full models}
+```{r SYSTOL Initial null and full models, warning = FALSE, message = FALSE}
 systol_M0 = lm(Systolic.Blood.Pressure ~ 1, data = systol_data)
 systol_M1 = lm(Systolic.Blood.Pressure ~ ., data = systol_data)
 ```
 
-```{r SYSTOL Forward AIC on null model}
+```{r SYSTOL Forward AIC on null model, warning = FALSE, message = FALSE}
 systol_forw <- step(systol_M0, scope = list(lower = systol_M0, upper = systol_M1), direction = "forward", k = 2, trace = 0)
+autoplot(systol_forw)
+```
 
+```{r, warning = FALSE, message = FALSE}
 tab_model(systol_forw)
 ```
 
-```{r, SYSTOL PLOT, echo=TRUE, fig.height= 4, fig.width= 7}
+```{r, SYSTOL PLOT, echo=TRUE, fig.height= 4, fig.width= 7, warning = FALSE, message = FALSE}
 plot_summs(systol_forw) + ggtitle("Regression Coefficient Estimates for Systolic Blood Pressure (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 9.5)
 ```
 
@@ -64,18 +80,22 @@ bmi_data=combined_data[ , !(names(combined_data) %in% c("X", "ABSPID", "ABSHID",
     )
 ```
 
-```{r BMI Initial null and full models}
+```{r BMI Initial null and full models, warning = FALSE, message = FALSE}
 bmi_M0 = lm(BMI ~ 1, data = bmi_data)
 bmi_M1 = lm(BMI ~ ., data = bmi_data)
 ```
 
-```{r BMI Forward AIC on null model}
+```{r BMI Forward AIC on null model, warning = FALSE, message = FALSE}
 bmi_forw <- step(bmi_M0, scope = list(lower = bmi_M0, upper = bmi_M1), direction = "forward", k = 2, trace = 0)
 
 tab_model(bmi_forw)
 ```
 
-```{r BMI PLOT}
+```{r, warning = FALSE, message = FALSE}
+autoplot(bmi_forw)
+```
+
+```{r BMI PLOT, warning = FALSE, message = FALSE}
 plot_summs(bmi_forw) + ggtitle("Regression Coefficient Estimates for BMI (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
 ```{r Viewing cholesterol, warning = FALSE}
@@ -86,26 +106,26 @@ chol_data=combined_data[ , !(names(combined_data) %in% c("X",  "ABSPID", "ABSHID
 chol_data$Total.Cholesterol = factor(chol_data$Total.Cholesterol)
 ```
 
-```{r, Initial null and full models using clm() for ordinal logistic regression}
+```{r, Initial null and full models using clm() for ordinal logistic regression, warning = FALSE, message = FALSE}
 chol_M0 = clm(Total.Cholesterol ~ 1,  data = chol_data, Hess = TRUE)
 chol_M1 = clm(Total.Cholesterol ~ .,  data = chol_data, Hess = TRUE)
 ```
-```{r CHOLESTEROL Forward AIC on null model}
+```{r CHOLESTEROL Forward AIC on null model, warning = FALSE, message = FALSE}
 ## Looks like forward selection does not work for ordinal logistic regression
 chol_forw <- step(chol_M0, scope = list(lower = chol_M0, upper = chol_M1), direction = "forward", k = 2, trace = 0)
 tab_model(chol_forw)
 ```
 
-```{r, CHOLESTEROL Ordinal Regression with Features selected from Lasso Regression}
+```{r, CHOLESTEROL Ordinal Regression with Features selected from Lasso Regression, warning = FALSE, message = FALSE}
 chol_M2 = clm(Total.Cholesterol ~ Caffeine + Alcohol + Age + Niacin + B12 + Retinols + B6 + Risk.of.Diabetes + Folates + Starch + Fruit,  data = chol_data, Hess = TRUE)
 summary(chol_M2)
 ```
-```{r CHOLESTEROL TABLE}
+```{r CHOLESTEROL TABLE, warning = FALSE, message = FALSE}
 tab_model(chol_M2, transform = NULL, string.est = "Estimates")
 ```
 
 
-```{r, CHOLESTEROL PLOT}
+```{r, CHOLESTEROL PLOT, warning = FALSE, message = FALSE}
 plot_summs(chol_M2) + ggtitle("Regression Coefficient Estimates for Total Cholesterol (95% CI)") + ylab("Predictor Variable") + xlab("Coefficient Estimate") + theme_gray(base_size = 10)
 ```
 
